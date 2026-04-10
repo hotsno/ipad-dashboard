@@ -44,6 +44,15 @@ const MONTH_NAMES = [
   "Dec",
 ] as const;
 
+const UNKNOWN_WEATHER_ICON_SRC = "/OneDark/unknown.png";
+
+function resolveOneDarkWeatherIconSrc(iconCode: string | undefined): string {
+  if (iconCode) {
+    return `/OneDark/${iconCode}.png`;
+  }
+  return UNKNOWN_WEATHER_ICON_SRC;
+}
+
 /** Matches `example/js/greeting.js` thresholds and copy. */
 function getGreetingPrefix(date: Date): string {
   const hour = date.getHours();
@@ -148,7 +157,7 @@ export function DashboardApp() {
   const [now, setNow] = useState(() => new Date());
   const [settings, setSettings] = useState<DashboardSettings>(defaultSettings);
   const [mounted, setMounted] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
   const [weather, setWeather] = useState<WeatherState>({
     data: null,
@@ -175,7 +184,6 @@ export function DashboardApp() {
       }
 
       setSettings(storedSettings);
-      setIsSettingsOpen(false);
     });
 
     return () => window.cancelAnimationFrame(frame);
@@ -201,7 +209,7 @@ export function DashboardApp() {
       if (!settings.weatherApiKey) {
         setWeather({
           data: null,
-          error: "Add an OpenWeatherMap API key in settings to load weather.",
+          error: "No API key",
           loading: false,
         });
         return;
@@ -293,9 +301,9 @@ export function DashboardApp() {
       `${getGreetingPrefix(now)}${settings.userName.trim() || defaultSettings.userName}`,
     [now, settings.userName],
   );
-  const weatherIconUrl = weather.data
-    ? `https://openweathermap.org/img/wn/${weather.data.iconCode}@2x.png`
-    : null;
+  const weatherIconSrc = weather.data
+    ? resolveOneDarkWeatherIconSrc(weather.data.iconCode)
+    : UNKNOWN_WEATHER_ICON_SRC;
   const temperatureLabel =
     settings.temperatureUnit === "fahrenheit" ? "F" : "C";
 
@@ -360,21 +368,15 @@ export function DashboardApp() {
           </div>
 
           <div className="mt-0 flex items-center justify-center">
-            {weatherIconUrl ? (
-              <div className="h-[70px] w-[70px] shrink-0">
-                <NextImage
-                  src={weatherIconUrl}
-                  alt=""
-                  className="h-[70px] w-[70px]"
-                  width={70}
-                  height={70}
-                />
-              </div>
-            ) : (
-              <div className="flex h-[70px] w-[70px] shrink-0 items-center justify-center text-2xl text-[#d8dee9]/50">
-                ~
-              </div>
-            )}
+            <div className="h-[70px] w-[70px] shrink-0">
+              <NextImage
+                src={weatherIconSrc}
+                alt=""
+                className="h-[70px] w-[70px]"
+                width={70}
+                height={70}
+              />
+            </div>
 
             <p className="ml-[15px] text-[3vh] font-bold leading-normal">
               {weather.loading && !weather.data ? (

@@ -5,10 +5,6 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "openweathermap.org",
-      },
-      {
-        protocol: "https",
         hostname: "images.unsplash.com",
       },
     ],
